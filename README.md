@@ -12,4 +12,5 @@ and so on.
 Take care and be safe! Good luck! :-)
 ---
 For more detailed description see "README.md" file within the parent directory of
-this Custom Ansible role! :-)
+this Custom Ansible role.
+Also you may look at the scheme in PDF format.
