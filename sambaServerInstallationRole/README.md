@@ -29,11 +29,15 @@ Here, down below, a list of special variables:
 {{ domainCreds.domainname }} > AD FQDN itself
 
 {{ domainCreds.password }} > A password for the privileged username
+
 {{ smbConfVars.wgName }} > NetBIOS Domain name (for example for domain.local NetBIOS name will be DOMAIN)
+
 {{ smbConfVars.dcHostName }} > FQDN of Domain Controller
+
 {{ smbConfVars.domainName }} > AD FQDN itself
-{{ smbConfVars.validUserLogin }} > A username who will work with Samba share(s). Also with this username one of tasks
-performs a test connection to Samba server to verify permissions.
+
+{{ smbConfVars.validUserLogin }} > A username who will work with Samba share(s). 
+Also with this username one of tasks performs a test connection to Samba server to verify permissions.
 
 Important! If you want to add a whole group to access Samba share please look inside templates/smb.conf.j2. There you
 will discover it.
