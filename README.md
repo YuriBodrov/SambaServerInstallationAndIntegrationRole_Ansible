@@ -9,6 +9,6 @@ I will be happy to receive from you any feedback: wishes, suggestions, comments
 and so on.
 
 Take care and be safe! Good luck! :-)
-
+---
 For more detailed description see README.md file within the parent directory of
 this Custom Ansible role! :-)
