@@ -21,7 +21,7 @@ Role Variables
 All variables are listed in vars/main.yml.
 
 Here, down below, a list of special variables:
-{{ dirPaths.sambaDirPath }} > Path to the Samba share (for example: /opt/samba/share);
+{{ dirPaths.sambaDirPath }} > Path to the Samba share (for example: /opt/samba/share).
 {{ domainCreds.username }} > An MS AD username(login) with appropriate domain privileges to join computer with AD Domain;
 {{ domainCreds.domainname }} > AD FQDN itself
 {{ domainCreds.password }} > A password for the privileged username
