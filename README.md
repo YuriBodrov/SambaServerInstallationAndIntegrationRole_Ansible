@@ -6,7 +6,7 @@ Hello, dear colleagues!
 
 Let me introduce you this Ansible custom role. 
 
-I hope that it may be useful to some of you :-)
+I hope that it may be useful for some of you :-)
 
 I will be happy to receive from you any feedback: wishes, suggestions, comments and so on.
 
