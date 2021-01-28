@@ -1,0 +1,15 @@
+---
+# tasks file for sambaServerInstallationRole
+- name: SAMBA INSTALLATION TASKS SEQUENCE
+  hosts: sambaHostNames
+
+  roles:
+    - sambaServerInstallationRole
+
+  post_tasks:
+    - name: send hello to user who started me
+      debug:
+        msg: "HELLO FROM ANSIBLE!"
+
+...
+

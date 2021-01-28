@@ -1,0 +1,149 @@
+#############################################################################
+################ Tasks file for sambaServerInstallationRole #################
+########### Author : Yuri P. Bodrov, email: bodrovyp@hotmail.com ############
+#############################################################################
+
+---
+
+- name: CREATE AN APPROPRIATE DIRECTORY FOR SAMBA SHARE
+  file:
+    #path: /opt/samba/share
+    path: "{{ dirPaths.sambaDirPath }}" 
+    state: directory
+
+#############################################################################
+
+- name: INSTALL REQUIRED PACKAGES FOR SELINUX FCONTEXT ARGUMENTS
+  yum:
+    name: policycoreutils-python
+    state: present
+
+#############################################################################
+
+- name: SET SELINUX samba_share_t ATTRIBUTES TO THIS SAMBA SHARE
+  sefcontext:
+    #target: /opt/samba/share
+    target: "{{ dirPaths.sambaDirPath }}"
+    setype: samba_share_t
+    state: present
+  
+#############################################################################
+
+- name: RUN RESTORECON TO APPLY A NEW SELINUX ATTRIBUTES
+  shell:
+    #cmd: restorecon -Rv /opt/samba/share; ls -ld /opt/samba/share
+    cmd: restorecon -Rv "{{ dirPaths.sambaDirPath }}"; ls -ld "{{ dirPaths.sambaDirPath }}"
+
+#############################################################################
+
+- name: CHECK IF SAMBA DIRECTORY IS ALREADY EXISTS
+  stat:
+    #path: /opt/samba/share
+    path: "{{ dirPaths.sambaDirPath }}"
+  register: dir_name
+
+- debug:
+    msg: "A Samba directory is already exists!"
+  when: dir_name.stat.isdir is defined and dir_name.stat.isdir
+
+#############################################################################
+
+- name: INSTALLATION OF APPROPRIATE REPOSITORIES FOR SAMBA OPERATIONS
+  yum:
+    name: "{{ item.name }}"
+    state: present
+  loop: "{{ packVariables }}"
+
+#############################################################################
+
+- name: PERFORM THE SERVICE ENABLING PROCESS
+  service:
+    name: "{{ item.name }}"
+    enabled: yes
+  loop: "{{ serviceNames }}"
+
+#############################################################################
+
+- name: PERFORM THE SERVICE STARTING PROCESS
+  service:
+    name: "{{ item.name }}"
+    state: started
+  loop: "{{ serviceNames }}"
+
+#############################################################################
+
+- name: SET A FIREWALL RULE FOR THE SAMBA SERVICES
+  firewalld:
+    service: samba
+    permanent: yes
+    state: enabled
+
+- name: RELOAD FIREWALLD CONFIGURATION
+  shell:
+    cmd: /usr/bin/firewall-cmd --reload
+
+#############################################################################
+
+- name: JOIN TO AD DOMAIN KERBEROS REALM 
+  block:
+    - name: TRY TO JOIN TO AD DOMAIN REALM
+      shell: echo "{{ domainCreds.password }}" | realm join -U "{{ domainCreds.username }}" "{{ domainCreds.domainname }}"
+        #cmd: echo "{{ domainCreds.password }}" | realm join -U "{{ domainCreds.username }}" "{{ domainCreds.domainname }}"
+      #register: realmJoinResult
+      ignore_errors: yes
+
+#    - fail:
+#        msg: "Samba server is already joined with AD Kerberos Realm"
+#      #ignore_errors: yes
+#      when: realmJoinResult.stdout.find('Already joined') != 1 
+
+#############################################################################
+
+- name: PROCESS TO JOIN DOMAIN WITH ADS (WINBIND) OPTIONS
+  shell:
+    cmd: echo "{{ domainCreds.password }}" | net ads join "{{ domainCreds.domainname }}" -U "{{ domainCreds.username }}"
+  ignore_errors: yes
+
+#############################################################################
+
+- name: RESTART SERVICES WHICH ARE AFFECTED BY THE PREVIOUS SETTINGS
+  service:
+    name: winbind
+    state: restarted
+  service:
+    name: realmd
+    state: restarted
+  service:
+    name: sssd
+    state: restarted
+
+#############################################################################
+
+- name: ADD CONFIG PARAMETERS TO THE SAMBA CONFIGURATION FILE BY DEFAULT
+  template:
+    #src: templates/smb.conf.j2
+    src: smb.conf.j2
+    dest: /etc/samba/smb.conf
+
+- name: RESTART SAMBA SERVICES
+  shell:
+    cmd: systemctl restart smb nmb winbind
+
+- name: VERIFY A DOMAIN USER ACCESS TO THE SAMBA SHARE
+  shell: echo "{{ domainCreds.password }}" | smbclient -L localhost -U "{{ smbConfVars.validUserLogin }}"@"{{ domainCreds.domainname }}"
+  register: smbClientResult
+
+- name: OUTPUT OF VERIFIED STATUS TO STDOUT
+  debug:
+    #msg: smbClientResult.stdout
+    #msg: "{{ smbClientResult.stdout }}"
+    msg: "{{ smbClientResult }}"
+
+- debug:
+    msg: "Samba share is present and active!"
+  when: smbClientResult.stdout.find('Test Samba Share') != -1 
+
+#############################################################################
+
+...
+
