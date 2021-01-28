@@ -1,4 +1,4 @@
-# SambaServerInstallationRole_Ansible
+# SambaServerInstallationAndIntegrationRole_Ansible
 Samba Server installation and integration with MS ADDS. Ansible custom role.
 
 Hello, dear colleagues!
